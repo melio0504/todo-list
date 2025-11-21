@@ -1,0 +1,16 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+:root {
+  /* Code here */
+}
+
+body {
+  min-height: 100vh;
+  background: black;
+}
