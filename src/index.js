@@ -10,4 +10,4 @@ const root = document.querySelector('#root');
 // Load UI
 Header();
 Sidebar();
-Container;
+Container();
