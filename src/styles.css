@@ -19,7 +19,42 @@
   --font-family: "Inter", sans-serif;
 }
 
-body {
-  min-height: 100vh;
-  background: black;
+body, #root {
+  height: 100vh;
+  background: var(--bg-clr);
+  font-family: var(--font-family);
+
+  header {
+    display: flex;
+    place-items: center;
+    gap: 20px;
+    width: 100vw;
+    padding: 20px;
+    outline: 2px solid red;
+
+    .header_hamburgerBtn {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .header_logo {
+      width: 40px;
+      height: 40px;
+    }
+
+    /* Need improvement */
+    .header_logoName {
+       font-size: var(--heading-font);
+    }
+
+    .header_pfp {
+      width: 40px;
+      height: 40px;
+      border-radius: 50px;
+      border: 3px solid var(--primary-clr);
+      margin-left: auto;
+      cursor: pointer;  
+    }
+  }  
 }
