@@ -13,13 +13,14 @@
   --secondary-clr: #ffffff;
   --primary-clr: #89cff0;
   --font-clr: #1d1d1f;
-  --heading-font: 2rem;
+  --heading-font: 1.7rem;
   --subheading-font: 1.5rem;
   --body-font: 1.125rem;
   --font-family: "Inter", sans-serif;
 }
 
-body, #root {
+body, 
+#root {
   height: 100vh;
   background: var(--bg-clr);
   font-family: var(--font-family);
@@ -30,25 +31,30 @@ body, #root {
     gap: 20px;
     width: 100vw;
     padding: 20px;
-    outline: 2px solid red;
+    outline: 2px solid var(--primary-clr);
 
-    .header_hamburgerBtn {
-      width: 20px;
-      height: 20px;
+    .menu-toggle {
       cursor: pointer;
+      border: none;
+      background: none;
+
+      & img {
+        width: 20px;
+        height: 20px;
+      }
     }
 
-    .header_logo {
+    .logo {
       width: 40px;
       height: 40px;
     }
 
-    /* Need improvement */
-    .header_logoName {
+    .title {
        font-size: var(--heading-font);
+       font-weight: 500;
     }
 
-    .header_pfp {
+    .profile-icon {
       width: 40px;
       height: 40px;
       border-radius: 50px;
@@ -56,5 +62,18 @@ body, #root {
       margin-left: auto;
       cursor: pointer;  
     }
-  }  
+  }
+
+  /* Create a wrapper for both sidebar and container */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 10vw;
+    outline: 2px solid blue;
+  }
+
+  .container {
+    display: grid;
+  }
 }
