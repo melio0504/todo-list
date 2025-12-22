@@ -64,16 +64,74 @@ body,
     }
   }
 
-  /* Create a wrapper for both sidebar and container */
-  .sidebar {
+  .wrapper {
     display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 10vw;
-    outline: 2px solid blue;
-  }
 
-  .container {
-    display: grid;
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 200px;
+      padding: 20px 0px 20px 10px;
+
+      img {
+        width: 20px;
+        height: 20px;
+      }
+
+      button {
+        border: none;
+        border-radius: 16px;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        place-items: center;
+        gap: 10px;
+      }
+
+      #createBtn {
+        padding: 16px;
+        margin-bottom: 50px;
+        background: var(--primary-clr);
+        width: 60%;
+
+        & img {
+          width: 30px;
+          height: 30px;
+        }
+      }
+
+      #allTasksBtn, #starredBtn {
+        width: 90%;
+        height: 40px;
+        padding: 10px;
+
+        &:hover {
+          background: var(--primary-clr);
+        }
+      }
+
+      .list {
+        display: flex;
+        justify-content: space-between;
+        padding-left: 12px;
+        padding-right: 10px;
+        margin-top: 20px;
+
+        & h3 {
+          font-size: var(--body-font);
+          font-weight: 400;
+        }
+      }
+
+      #createNewListBtn {
+        margin-top: 20px;
+        padding-left: 12px;
+      }
+    }
+
+    .task-container {
+      display: grid;
+      width: 80%;
+    }
   }
 }
