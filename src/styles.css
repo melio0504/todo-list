@@ -215,6 +215,56 @@ body {
 
           .list-task {
             overflow: auto;
+            padding: 10px 20px 0px 20px;
+
+            #taskDeadline {
+              font-size: 0.8rem;
+            }
+
+            .task-details {
+              display: flex;
+              gap: 15px;
+              margin-top: 5px;
+              padding: 5px;
+
+              &:hover {
+                background: var(--btn-hovered-clr);
+              }
+
+              button {
+                font-size: 0.8rem;
+
+                img {
+                  width: 15px;
+                  height: 15px;
+                }
+              }
+
+              #checkBtn {
+                align-self: flex-start;
+                padding-top: 3px;
+              }
+
+              p {
+                font-size: 0.9rem;
+              }
+            }
+
+            .complete-dropdown {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              margin-top: 10px;
+
+              img {
+                width: 10px;
+                height: 10px;
+              }
+
+              p {
+                font-size: 0.8rem;
+              }
+            }
           }
       }
     }
