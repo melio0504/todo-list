@@ -158,6 +158,14 @@ body {
       grid-auto-columns: 300px;
       width: 100%;
 
+      &:has(.list-container:only-child) {
+        
+        .list-container {
+          width: 40%;
+          margin-inline: auto;
+        }
+      }
+
       .list-container {
         height: max-content;
         max-height: 600px;
