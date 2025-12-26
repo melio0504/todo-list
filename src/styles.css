@@ -242,6 +242,7 @@ body {
 
           #taskDeadline {
             font-size: 0.8rem;
+            font-weight: 500;
           }
 
           .task-details {
@@ -266,6 +267,16 @@ body {
             #checkBtn {
               align-self: flex-start;
               padding-top: 3px;
+            }
+
+            #dateBtn {
+              font-weight: bold;
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              border: 1px solid black;
+              border-radius: 16px;
+              padding: 4px;
             }
 
             p {
