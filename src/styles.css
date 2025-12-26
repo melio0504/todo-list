@@ -12,6 +12,8 @@
   --bg-clr: #f5f5f7;
   --secondary-clr: #ffffff;
   --primary-clr: #89cff0;
+  --main-ctnr-clr: #e1e1e1;
+  --container-bg-clr: 	#ADD8E6;
   --btn-hovered-clr: 	#6497b1;
   --font-clr: #1d1d1f;
   --heading-font: 1.7rem;
@@ -147,10 +149,68 @@ body {
     }
 
     .task-container {
-      display: grid;
-      width: 100%;
-      background: var(--bg-clr);
       border-radius: 16px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+
+      .list-container {
+          display: flex;
+          flex-direction: column;
+          background: var(--container-bg-clr);
+          margin-left: 20px;
+          margin-right: 20px;
+          border-radius: 16px;
+
+          button {
+            border: none;
+            background: none;
+            cursor: pointer;
+          }
+
+          img {
+            width: 20px;
+            height: 20px;
+          }
+
+          .list-heading {
+            display: flex;
+            flex-direction: column;
+
+            .list-name {
+              display: flex;
+              justify-content: space-between;
+              place-items: center;
+              padding: 10px 20px 0px 20px;
+
+              #listOptions {
+                border-radius: 16px;
+                padding: 5px;
+
+                &:hover {
+                  background: var(--primary-clr);
+                }
+              } 
+            }
+
+            #addTaskBtn {
+              display: flex;
+              gap: 15px;
+              align-items: center;
+              padding: 10px;
+              margin: 0px 7px 0px 7px;
+              border-radius: 16px;
+  
+              &:hover {
+                background: var(--primary-clr)
+              }
+            }
+          }
+
+          .list-task {
+            overflow: auto;
+          }
+      }
     }
   }
 }
