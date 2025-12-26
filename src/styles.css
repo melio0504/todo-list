@@ -159,121 +159,122 @@ body {
       width: 100%;
 
       .list-container {
-          height: 400px;
+        max-height: 600px;
+        display: flex;
+        flex-direction: column;
+        background: var(--container-bg-clr);
+        padding-bottom: 20px;
+        overflow-y: clip;
+        margin-left: 20px;
+        margin-right: 20px;
+        margin-top: 20px;
+        border-radius: 16px;
+        box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
+        -webkit-box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
+        -moz-box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
+
+        button {
+          border: none;
+          background: none;
+          cursor: pointer;
+        }
+
+        img {
+          width: 20px;
+          height: 20px;
+        }
+
+        .list-heading {
           display: flex;
           flex-direction: column;
-          background: var(--container-bg-clr);
-          padding-bottom: 20px;
-          margin-left: 20px;
-          margin-right: 20px;
-          margin-top: 20px;
-          border-radius: 16px;
-          box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
-          -webkit-box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
-          -moz-box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
 
-          button {
-            border: none;
-            background: none;
-            cursor: pointer;
-          }
-
-          img {
-            width: 20px;
-            height: 20px;
-          }
-
-          .list-heading {
+          .list-name {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            place-items: center;
+            padding: 10px 20px 0px 20px;
 
-            .list-name {
-              display: flex;
-              justify-content: space-between;
-              place-items: center;
-              padding: 10px 20px 0px 20px;
-
-              #listOptions {
-                border-radius: 16px;
-                padding: 5px;
-
-                &:hover {
-                  background: var(--primary-clr);
-                }
-              } 
-            }
-
-            #addTaskBtn {
-              display: flex;
-              gap: 15px;
-              align-items: center;
-              padding: 10px;
-              margin: 0px 7px 0px 7px;
+            #listOptions {
               border-radius: 16px;
-  
-              &:hover {
-                background: var(--primary-clr)
-              }
-            }
-          }
-
-          .list-task {
-            overflow: auto;
-            padding: 10px 20px 10px 20px;
-            
-            /* Customize scrollbar   */
-
-            #taskDeadline {
-              font-size: 0.8rem;
-            }
-
-            .task-details {
-              display: flex;
-              gap: 15px;
-              margin-top: 5px;
               padding: 5px;
 
               &:hover {
-                background: var(--btn-hovered-clr);
+                background: var(--primary-clr);
               }
-
-              button {
-                font-size: 0.8rem;
-
-                img {
-                  width: 15px;
-                  height: 15px;
-                }
-              }
-
-              #checkBtn {
-                align-self: flex-start;
-                padding-top: 3px;
-              }
-
-              p {
-                font-size: 0.9rem;
-              }
-            }
+            } 
           }
 
-          #completedBtn {
+          #addTaskBtn {
             display: flex;
+            gap: 15px;
             align-items: center;
-            gap: 10px;
-            width: 100%;
-            padding-left: 20px;
-            margin-top: auto;
+            padding: 10px;
+            margin: 0px 7px 0px 7px;
+            border-radius: 16px;
 
-            img {
-              width: 10px;
-              height: 10px;
+            &:hover {
+              background: var(--primary-clr)
+            }
+          }
+        }
+
+        .list-task {
+          overflow: auto;
+          padding: 10px 20px 10px 20px;
+          
+          /* Customize scrollbar   */
+
+          #taskDeadline {
+            font-size: 0.8rem;
+          }
+
+          .task-details {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+            padding: 5px;
+
+            &:hover {
+              background: var(--btn-hovered-clr);
+            }
+
+            button {
+              font-size: 0.8rem;
+
+              img {
+                width: 15px;
+                height: 15px;
+              }
+            }
+
+            #checkBtn {
+              align-self: flex-start;
+              padding-top: 3px;
             }
 
             p {
-              font-size: 0.8rem;
+              font-size: 0.9rem;
             }
           }
+        }
+
+        #completedBtn {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          padding-left: 20px;
+          margin-top: auto;
+
+          img {
+            width: 10px;
+            height: 10px;
+          }
+
+          p {
+            font-size: 0.8rem;
+          }
+        }
       }
     }
   }
