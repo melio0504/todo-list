@@ -67,13 +67,29 @@
           </button>
         </div>
         <div class="list-task">
-          <!-- 
-            Scrollable
-            Radio button with Task name, option, star
-            Date button
-
-            Completed button
-          -->
+          <!-- Date heading -->
+          <span id="taskDeadline">Today</span>
+          <!-- Task container -->
+          <div class="task-details">
+            <!-- Input dialog -->
+            <button id="checkBtn">
+              <img src="/public/images/circle.png" alt="check button">
+            </button>
+            <div class="task-name">
+              <p>Eat Breakfast</p>
+              <button id="dateBtn">
+                Today, 7:00am
+              </button>
+            </div>
+          </div>
+            
+          <!-- Complete dropdown -->
+          <div class="complete-dropdown">
+            <button id="completedBtn">
+              <img src="/public/images/right-arrow.png" alt="Complete button">
+            </button>
+            <p>Completed (20)</p>
+          </div>
         </div>
       </div>
     </main>
