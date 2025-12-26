@@ -250,6 +250,7 @@ body {
             gap: 15px;
             margin-top: 5px;
             padding: 5px;
+            border-radius: 14px;
 
             &:hover {
               background: var(--btn-hovered-clr);
