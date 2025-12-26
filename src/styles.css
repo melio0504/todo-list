@@ -87,6 +87,10 @@ body {
       flex-direction: column;
       min-width: 200px;
       padding: 20px 0px 20px 10px;
+
+      &.hidden {
+        display: none;
+      }
       
       img {
         width: 20px;
