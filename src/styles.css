@@ -87,9 +87,15 @@ body {
       flex-direction: column;
       min-width: 200px;
       padding: 20px 0px 20px 10px;
+      transition: transform 0.3s ease-in-out, visibility 0s 0.3s;
+      transform: translateX(0);
+      visibility: visible;
+      position: relative;
 
       &.hidden {
-        display: none;
+        transform: translateX(-100%);
+        visibility: none;
+        position: absolute;
       }
       
       img {
@@ -163,7 +169,6 @@ body {
       width: 100%;
 
       &:has(.list-container:only-child) {
-        
         .list-container {
           width: 40%;
           margin-inline: auto;
