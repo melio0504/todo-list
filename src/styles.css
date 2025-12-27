@@ -49,6 +49,7 @@ body {
     .logo {
       width: 40px;
       height: 40px;
+      cursor: pointer;
     }
 
     .title {
@@ -154,7 +155,12 @@ body {
 
       #createNewListBtn {
         margin-top: 20px;
-        padding-left: 12px;
+        padding: 12px;
+        width: 90%;
+
+        &:hover {
+          background: var(--primary-clr);
+        }
       }
     }
 
