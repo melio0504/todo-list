@@ -312,4 +312,153 @@ body {
       }
     }
   }
+
+  .dialog-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: brightness(0.3);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+
+    &.active {
+      display: flex;
+    }
+  }
+
+  .dialog-container {
+    background: var(--secondary-clr);
+    border-radius: 16px;
+    padding: 60px 30px 50px 30px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .dialog-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--font-clr);
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--main-ctnr-clr);
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .dialog-input,
+  .dialog-date,
+  .dialog-time,
+  .dialog-select,
+  .dialog-textarea {
+    padding: 12px;
+    border: 1px solid var(--main-ctnr-clr);
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: var(--body-font);
+    background: var(--secondary-clr);
+    color: var(--font-clr);
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+    }
+  }
+
+  .datetime-container {
+    display: flex;
+    gap: 10px;
+  }
+
+  .dialog-date,
+  .dialog-time {
+    flex: 1;
+  }
+
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    label {
+      font-size: var(--body-font);
+      color: var(--font-clr);
+      cursor: pointer;
+    }
+  }
+
+  .dialog-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .dialog-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .dialog-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .dialog-cancel,
+  .dialog-submit {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: var(--body-font);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .dialog-cancel {
+    background: var(--main-ctnr-clr);
+    color: var(--font-clr);
+
+    &:hover {
+      background: var(--btn-hovered-clr);
+    }
+  }
+
+  .dialog-submit {
+    background: var(--primary-clr);
+    color: var(--font-clr);
+
+    &:hover {
+      background: var(--btn-hovered-clr);
+    }
+  }
 }
