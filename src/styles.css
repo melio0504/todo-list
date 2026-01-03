@@ -68,6 +68,32 @@ body {
         height: 28px;
       }
 
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+
+        .tooltiptext {
+          visibility: hidden;
+          width: 130px;
+          top: 100%;
+          left: 50%;
+          margin-left: -65px;
+          background-color: black;
+          color: #fff;
+          font-size: 0.8rem;
+          text-align: center;
+          border-radius: 6px;
+          padding: 5px;
+          position: absolute;
+          z-index: 1;
+        }
+
+        &:hover .tooltiptext {
+          visibility: visible;
+        }
+      }
+
       .profile-icon {
         width: 40px;
         height: 40px;
