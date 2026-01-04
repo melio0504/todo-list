@@ -2,6 +2,52 @@
   "lists": [
     {
       "id": "list-1",
+      "title": "Personal Tasks",
+      "tasks": [
+        {
+          "id": "task-1",
+          "title": "Plan weekend trip",
+          "description": "Research destinations and make a travel itinerary",
+          "dueDate": "01/15/2025",
+          "time": "1:00pm",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-2",
+          "title": "Call Mom",
+          "description": "Check in with Mom and catch up",
+          "dueDate": "01/16/2025",
+          "time": "2:00pm",
+          "starred": true,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-3",
+          "title": "Buy birthday gift",
+          "description": "Get a gift for John's birthday next week",
+          "dueDate": "01/18/2025",
+          "time": "N/A",
+          "starred": false,
+          "completed": false,
+          "allDay": true
+        },
+        {
+          "id": "task-4",
+          "title": "Grocery shopping",
+          "description": "Buy groceries for the week",
+          "dueDate": "01/14/2025",
+          "time": "N/A",
+          "starred": false,
+          "completed": true,
+          "allDay": true
+        }
+      ]
+    },
+    {
+      "id": "list-2",
       "title": "Work Tasks",
       "tasks": [
         {
@@ -31,44 +77,18 @@
           "dueDate": "01/19/2025",
           "time": "1:00pm",
           "starred": false,
-          "completed": false,
-          "allDay": false
-        }
-      ]
-    },
-    {
-      "id": "list-2",
-      "title": "Personal Tasks",
-      "tasks": [
-        {
-          "id": "task-1",
-          "title": "Plan weekend trip",
-          "description": "Research destinations and make a travel itinerary",
-          "dueDate": "01/15/2025",
-          "time": "N/A",
-          "starred": false,
-          "completed": false,
-          "allDay": true
-        },
-        {
-          "id": "task-2",
-          "title": "Call Mom",
-          "description": "Check in with Mom and catch up",
-          "dueDate": "01/16/2025",
-          "time": "2:00pm",
-          "starred": true,
-          "completed": false,
+          "completed": true,
           "allDay": false
         },
         {
-          "id": "task-3",
-          "title": "Buy birthday gift",
-          "description": "Get a gift for John's birthday next week",
-          "dueDate": "01/18/2025",
-          "time": "N/A",
+          "id": "task-4",
+          "title": "Team meeting notes",
+          "description": "Document key points from yesterday's team meeting",
+          "dueDate": "01/10/2025",
+          "time": "11:00am",
           "starred": false,
-          "completed": false,
-          "allDay": true
+          "completed": true,
+          "allDay": false
         }
       ]
     },
@@ -104,6 +124,16 @@
           "time": "9:00am",
           "starred": false,
           "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-4",
+          "title": "Read chapter 2",
+          "description": "Complete reading assignment for literature class",
+          "dueDate": "01/16/2025",
+          "time": "5:00pm",
+          "starred": false,
+          "completed": true,
           "allDay": false
         }
       ]
