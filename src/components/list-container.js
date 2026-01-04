@@ -1,4 +1,6 @@
 import { format } from 'date-fns';
+import { formatTimeTo12Hour } from '../utils/date-time-utils.js';
+import dummyData from '../data/dummy-data.json';
 import List from '/public/images/list.png';
 import AddTaskIcon from '/public/images/add-task-icon.png';
 import CompleteIcon from '/public/images/right-arrow.png';
@@ -6,8 +8,6 @@ import CheckIcon from '/public/images/circle.png';
 import CalendarIcon from '/public/images/calendar.png';
 import StarIcon from '/public/images/star.png';
 import StarCompletedIcon from '/public/images/star-completed.png';
-import dummyData from '../data/dummy-data.json';
-import { formatTimeTo12Hour } from '../utils/date-time-utils.js';
 
 export default class ListContainer {
   constructor(data = {}) {
@@ -49,9 +49,12 @@ export default class ListContainer {
         ${this.renderTasks()}
       </div>
       <button class="completed-btn" data-list-id="${this.id}">
-        <img src="${this.showCompleted ? DownwardArrowIcon : CompleteIcon}" alt="Complete button">
+        <img src="${CompleteIcon}" alt="Complete button">
         <p>Completed (${this.completedCount})</p>
       </button>
+      <div class="completed-task">
+        ${this.renderCompletedTasks()}
+      </div>
     `;
     
     const addTaskBtn = container.querySelector('.addTaskBtn');
@@ -96,13 +99,12 @@ export default class ListContainer {
       });
     });
 
-    const completedBtn = container.querySelector('.completed-btn');
-    if (completedBtn) {
-      completedBtn.onclick = (e) => {
+    container.querySelectorAll('.completed-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.toggleCompleted();
-      };
-    }
+      });
+    });
 
     return container;
   }
@@ -182,6 +184,28 @@ export default class ListContainer {
         </button>
       </div>
     `;
+  }
+
+  renderCompletedTasks() {
+    if (!this.tasks || this.tasks.length === 0) {
+      return '';
+    }
+
+    const completedTasks = this.tasks.filter(task => task.completed);
+
+    const groupedCompletedTasks = {};
+    completedTasks.forEach(task => {
+      if (!task.id) {
+        task.id = `task-${Date.now()}-${Math.random().toString(36)}`;
+      }
+      const deadline = task.deadline || 'No date';
+      if (!groupedCompletedTasks[deadline]) {
+        groupedCompletedTasks[deadline] = [];
+      }
+      groupedCompletedTasks[deadline].push(task);
+    }); 
+
+    return completedTasksDOM;
   }
 
   formatDeadlineFromDate(dateStr) {
@@ -302,13 +326,12 @@ export default class ListContainer {
         });
       }
 
-      const completedBtnForListener = container.querySelector('.completed-btn');
-      if (completedBtnForListener) {
-        completedBtnForListener.onclick = (e) => {
+      container.querySelectorAll('.completed-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
           this.toggleCompleted();
-        };
-      }
+        });
+      });
     }
   }
 
