@@ -495,7 +495,7 @@ body {
   .dialog-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
 
   .dialog-input,
@@ -503,7 +503,7 @@ body {
   .dialog-time,
   .dialog-select,
   .dialog-textarea {
-    padding: 12px;
+    padding: 16px;
     border: 1px solid var(--main-ctnr-clr);
     border-radius: 8px;
     font-family: var(--font-family);
@@ -530,7 +530,8 @@ body {
   .checkbox-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 4px 0;
 
     label {
       font-size: var(--body-font);
@@ -558,7 +559,8 @@ body {
   }
 
   .dialog-cancel,
-  .dialog-submit {
+  .dialog-submit,
+  .dialog-delete {
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
@@ -583,6 +585,119 @@ body {
 
     &:hover {
       background: var(--btn-hovered-clr);
+    }
+  }
+
+  .dialog-delete {
+    background: #dc3545;
+    color: white;
+
+    &:hover {
+      background: #c82333;
+    }
+  }
+
+  .edit-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .edit-task-input,
+  .edit-task-date,
+  .edit-task-time,
+  .edit-task-textarea {
+    padding: 16px;
+    border: 1px solid var(--main-ctnr-clr);
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: var(--body-font);
+    background: var(--secondary-clr);
+    color: var(--font-clr);
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+    }
+  }
+
+  .edit-task-datetime-container {
+    display: flex;
+    gap: 10px;
+  }
+
+  .edit-task-date,
+  .edit-task-time {
+    flex: 1;
+  }
+
+  .edit-task-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+
+    label {
+      font-size: var(--body-font);
+      color: var(--font-clr);
+      cursor: pointer;
+    }
+  }
+
+  .edit-task-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .edit-task-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .edit-task-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .edit-task-cancel,
+  .edit-task-submit,
+  .edit-task-delete {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: var(--body-font);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .edit-task-cancel {
+    background: var(--main-ctnr-clr);
+    color: var(--font-clr);
+
+    &:hover {
+      background: var(--btn-hovered-clr);
+    }
+  }
+
+  .edit-task-submit {
+    background: var(--primary-clr);
+    color: var(--font-clr);
+
+    &:hover {
+      background: var(--btn-hovered-clr);
+    }
+  }
+
+  .edit-task-delete {
+    background: #dc3545;
+    color: white;
+
+    &:hover {
+      background: #c82333;
     }
   }
 }
