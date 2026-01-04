@@ -2,7 +2,6 @@ import { format } from 'date-fns';
 import List from '/public/images/list.png';
 import AddTaskIcon from '/public/images/add-task-icon.png';
 import CompleteIcon from '/public/images/right-arrow.png';
-import DownwardArrowIcon from '/public/images/downward-arrow.png';
 import CheckIcon from '/public/images/circle.png';
 import CalendarIcon from '/public/images/calendar.png';
 import StarIcon from '/public/images/star.png';
