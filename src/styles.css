@@ -250,7 +250,8 @@ body {
         flex-direction: column;
         background: var(--container-bg-clr);
         padding-bottom: 20px;
-        overflow-y: clip;
+        overflow-y: auto;
+        overflow-x: hidden;
         margin-left: 20px;
         margin-right: 20px;
         margin-top: 20px;
@@ -258,6 +259,7 @@ body {
         box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
         -webkit-box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
         -moz-box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.58);
+        scrollbar-width: none;
 
         button {
           border: none;
