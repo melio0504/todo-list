@@ -428,24 +428,29 @@ export default class DialogManager {
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
-          <h2 style="margin-bottom: 20px; font-size: 1.5rem;">Change Date</h2>
-          <form id="dateModalForm">
-            <div class="datetime-container">
-              <input type="date" id="modalTaskDate" class="dialog-date">
-              <select id="modalTaskTime" class="dialog-time">
+          <h2 style="margin-bottom: 20px; font-size: 1.5rem;">Edit Task</h2>
+          <form id="dateModalForm" class="edit-task-form">
+            <input type="text" id="modalTaskTitle" class="edit-task-input" placeholder="Task title" required>
+            
+            <div class="edit-task-datetime-container">
+              <input type="date" id="modalTaskDate" class="edit-task-date">
+              <select id="modalTaskTime" class="edit-task-time">
                 ${generateTimeOptions().map(opt => 
                   `<option value="${opt.value}">${opt.label}</option>`
                 ).join('')}
               </select>
             </div>
-            <div class="checkbox-container">
-              <input type="checkbox" id="modalAllDay" class="dialog-checkbox">
+            <div class="edit-task-checkbox-container">
+              <input type="checkbox" id="modalAllDay" class="edit-task-checkbox">
               <label for="modalAllDay">All day</label>
             </div>
-            <div class="dialog-actions" style="margin-top: 20px;">
-              <button type="button" class="dialog-cancel" id="removeDateBtn">Remove Date</button>
-              <button type="button" class="dialog-cancel" id="cancelDateModal">Cancel</button>
-              <button type="submit" class="dialog-submit">Save</button>
+            
+            <textarea id="modalTaskDescription" class="edit-task-textarea" placeholder="Description" rows="4"></textarea>
+            
+            <div class="edit-task-actions">
+              <button type="button" class="edit-task-delete" id="removeDateBtn">Delete</button>
+              <button type="button" class="edit-task-cancel" id="cancelDateModal">Cancel</button>
+              <button type="submit" class="edit-task-submit">Save</button>
             </div>
           </form>
         </div>
@@ -461,7 +466,13 @@ export default class DialogManager {
 
       closeBtn.addEventListener('click', () => this.closeDateModal());
       cancelBtn.addEventListener('click', () => this.closeDateModal());
-      removeBtn.addEventListener('click', () => this.removeTaskDate(taskId, listId));
+      removeBtn.addEventListener('click', () => {
+        const currentTaskId = dateModal.dataset.taskId;
+        const currentListId = dateModal.dataset.listId;
+        if (currentTaskId && currentListId) {
+          this.deleteTask(currentTaskId, currentListId);
+        }
+      });
       
       allDayCheckbox.addEventListener('change', (e) => {
         timeSelect.disabled = e.target.checked;
@@ -472,7 +483,11 @@ export default class DialogManager {
 
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        this.saveTaskDate(taskId, listId);
+        const currentTaskId = dateModal.dataset.taskId;
+        const currentListId = dateModal.dataset.listId;
+        if (currentTaskId && currentListId) {
+          this.saveTaskDate(currentTaskId, currentListId);
+        }
       });
 
       dateModal.addEventListener('click', (e) => {
@@ -485,6 +500,15 @@ export default class DialogManager {
     const dateInput = dateModal.querySelector('#modalTaskDate');
     const timeSelect = dateModal.querySelector('#modalTaskTime');
     const allDayCheckbox = dateModal.querySelector('#modalAllDay');
+    const titleInput = dateModal.querySelector('#modalTaskTitle');
+    const descriptionTextarea = dateModal.querySelector('#modalTaskDescription');
+
+    if (titleInput) {
+      titleInput.value = task.title || '';
+    }
+    if (descriptionTextarea) {
+      descriptionTextarea.value = task.description || '';
+    }
 
     if (task.date) {
       dateInput.value = task.date;
@@ -538,6 +562,15 @@ export default class DialogManager {
     const dateInput = dateModal.querySelector('#modalTaskDate');
     const timeSelect = dateModal.querySelector('#modalTaskTime');
     const allDayCheckbox = dateModal.querySelector('#modalAllDay');
+    const titleInput = dateModal.querySelector('#modalTaskTitle');
+    const descriptionTextarea = dateModal.querySelector('#modalTaskDescription');
+
+    if (titleInput) {
+      task.title = titleInput.value.trim();
+    }
+    if (descriptionTextarea) {
+      task.description = descriptionTextarea.value.trim() || '';
+    }
 
     const dateValue = dateInput.value;
     const timeValue = allDayCheckbox.checked ? '' : timeSelect.value;
@@ -555,13 +588,21 @@ export default class DialogManager {
       task.time = timeValue || (allDay ? 'N/A' : '');
       task.allDay = allDay;
       task.deadline = formatDateTime(dateValue, timeValue || '00:00', allDay);
+    } else {
+      task.dueDate = null;
+      task.date = null;
+      task.time = '';
+      task.allDay = false;
+      task.deadline = 'No date';
     }
 
     list.update();
     this.saveToLocalStorage();
     this.closeDateModal();
 
-    if (this.viewManager.getCurrentView() === 'starred') {
+    if (this.viewManager.getCurrentView() === 'all') {
+      this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+    } else if (this.viewManager.getCurrentView() === 'starred') {
       this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
     }
   }
@@ -584,6 +625,25 @@ export default class DialogManager {
     this.closeDateModal();
 
     if (this.viewManager.getCurrentView() === 'starred') {
+      this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
+    }
+  }
+
+  deleteTask(taskId, listId) {
+    const list = this.lists.find(l => l.id === listId);
+    if (!list) return;
+
+    const taskIndex = list.tasks.findIndex(t => t.id === taskId);
+    if (taskIndex === -1) return;
+
+    list.tasks.splice(taskIndex, 1);
+    list.update();
+    this.saveToLocalStorage();
+    this.closeDateModal();
+
+    if (this.viewManager.getCurrentView() === 'all') {
+      this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+    } else if (this.viewManager.getCurrentView() === 'starred') {
       this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
     }
   }
