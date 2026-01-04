@@ -351,6 +351,12 @@ body {
               display: flex;
               flex-direction: column;
               gap: 5px;
+
+              .task-description {
+                font-size: 0.75rem;
+                color: rgba(0, 0, 0, 0.6);
+                margin-top: 2px;
+              }
             }
 
             .date-btn {
