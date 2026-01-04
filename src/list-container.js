@@ -8,6 +8,7 @@ import CalendarIcon from '/public/images/calendar.png';
 import StarIcon from '/public/images/star.png';
 import StarCompletedIcon from '/public/images/star-completed.png';
 import dummyData from './dummy-data.json';
+import { formatTimeTo12Hour } from './utils/date-time-utils.js';
 
 export default class ListContainer {
   constructor(data = {}) {
@@ -161,6 +162,7 @@ export default class ListContainer {
   renderTask(task, isCompleted = false) {
     const taskIsCompleted = task.completed === true || isCompleted;
     const deadline = task.deadline || (task.dueDate ? this.formatDeadlineFromDate(task.dueDate, task.time || '', task.allDay) : 'No date');
+    const displayTime = task.time && task.time !== 'N/A' && !task.allDay ? formatTimeTo12Hour(task.time) : null;
     return `
       <div class="task-details ${taskIsCompleted ? 'completed' : ''}" data-task-id="${task.id}">
         <button class="check-btn" data-task-id="${task.id}">
@@ -172,7 +174,7 @@ export default class ListContainer {
           ${task.dueDate || task.date ? `
             <button class="date-btn" data-task-id="${task.id}">
               <img src="${CalendarIcon}" alt="calendar icon">
-              ${deadline}${task.time && task.time !== 'N/A' && !task.allDay ? ` ${task.time}` : ''}
+              ${deadline}${displayTime ? ` ${displayTime}` : ''}
             </button>
           ` : ''}
         </div>
