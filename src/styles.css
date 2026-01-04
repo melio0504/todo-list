@@ -238,7 +238,7 @@ body {
 
       &:has(.list-container:only-child) {
         .list-container {
-          width: 40%;
+          min-width: 320px;
           margin-inline: auto;
         }
       }
