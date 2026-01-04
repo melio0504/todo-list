@@ -1,6 +1,10 @@
 import { format } from 'date-fns';
 import ListContainer from './list-container.js';
-import dummyData from './dummy-data.json';
+import { generateTimeOptions, formatDeadlineFromDate, formatDateTime, convertTimeFormat } from './utils/date-time-utils.js';
+import StorageManager from './managers/storage-manager.js';
+import ListManager from './managers/list-manager.js';
+import ViewManager from './managers/view-manager.js';
+import VisibilityManager from './managers/visibility-manager.js';
 
 export default class DialogManager {
   constructor() {
@@ -10,16 +14,54 @@ export default class DialogManager {
     this.createListBtn = document.querySelector('#createNewListBtn');
     this.showListBtn = document.querySelector('#showListBtn');
     this.listContent = document.querySelector('.listContent');
-    this.isListExpanded = true;
     
     this.lists = [];
     this.currentListId = null;
-    this.currentView = 'all';
-    this.starredTasksContainer = null;
-    this.listVisibility = {};
+    this.sortOrder = {};
+    
+    // We need to initialize the managers in this order: storageManager, visibilityManager, viewManager, listManager okieee?
+    this.storageManager = new StorageManager();
+    this.visibilityManager = new VisibilityManager(this.lists, this.listContent, this.showListBtn);
+    
+    const sharedCallbacks = {
+      onAddTask: (listId) => {
+        this.currentListId = listId;
+        this.open();
+      },
+      onTaskStarred: (taskId, starred) => {
+        if (this.viewManager) {
+          if (this.viewManager.getCurrentView() === 'starred') {
+            this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
+          } else if (this.viewManager.getCurrentView() === 'all') {
+            this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+          }
+        }
+        this.saveToLocalStorage();
+      },
+      onTaskCompleted: (taskId, completed) => {
+        if (this.viewManager) {
+          if (this.viewManager.getCurrentView() === 'all') {
+            this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+          } else if (this.viewManager.getCurrentView() === 'starred') {
+            this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
+          }
+        }
+        this.saveToLocalStorage();
+      },
+      onDateClick: (taskId, listId) => {
+        this.openDateModal(taskId, listId);
+      },
+      onListOptionsClick: (listId) => {
+        this.showListOptionsMenu(listId);
+      }
+    };
+    
+    this.viewManager = new ViewManager(this.lists, this.taskContainer, sharedCallbacks);
+    this.listManager = new ListManager(this.lists, sharedCallbacks);
     
     this.createTaskDialog();
     this.init();
+    this.loadFromLocalStorage();
   }
 
   init() {
@@ -37,7 +79,22 @@ export default class DialogManager {
     
     this.updateRepeatOptions();
     
-    this.createBtn.addEventListener('click', () => this.open());
+    this.createBtn.addEventListener('click', () => {
+      const visibleListContainer = Array.from(document.querySelectorAll('.list-container[data-list-id]')).find(
+        container => {
+          const style = window.getComputedStyle(container);
+          return container.offsetParent !== null && style.display !== 'none' && style.visibility !== 'hidden';
+        }
+      );
+      
+      if (visibleListContainer) {
+        const listId = visibleListContainer.dataset.listId;
+        if (listId && this.lists.find(l => l.id === listId)) {
+          this.currentListId = listId;
+        }
+      }
+      this.open();
+    });
     this.closeBtn.addEventListener('click', () => this.close());
     this.cancelBtn.addEventListener('click', () => this.close());
     this.dialog.addEventListener('click', (e) => {
@@ -56,7 +113,7 @@ export default class DialogManager {
     });
 
     this.createListBtn.addEventListener('click', () => this.openCreateListDialog());
-    this.showListBtn.addEventListener('click', () => this.toggleListExpansion());
+    this.showListBtn.addEventListener('click', () => this.visibilityManager.toggleListExpansion());
 
     this.taskContainer.addEventListener('click', (e) => {
       if (e.target.closest('.addTaskBtn')) {
@@ -70,16 +127,26 @@ export default class DialogManager {
     const allTasksBtn = document.querySelector('#allTasksBtn');
     const starredBtn = document.querySelector('#starredBtn');
     if (allTasksBtn) {
-      allTasksBtn.addEventListener('click', () => this.showAllTasks());
+      allTasksBtn.addEventListener('click', () => {
+        this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+        this.visibilityManager.updateSidebarLists(this.viewManager.getCurrentView(), () => this.saveToLocalStorage());
+      });
     }
     if (starredBtn) {
-      starredBtn.addEventListener('click', () => this.showStarredTasks());
+      starredBtn.addEventListener('click', () => {
+        this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
+        this.visibilityManager.updateSidebarLists(this.viewManager.getCurrentView(), () => this.saveToLocalStorage());
+      });
     }
 
-    this.createDefaultList();
+    // Only create default list if localStorage is empty (first time user opens the app lmao if there's one)
+    if (!this.storageManager.hasSavedData()) {
+      this.listManager.createDefaultList(formatDeadlineFromDate);
+      this.visibilityManager.lists = this.lists;
+    }
     this.createCreateListDialog();
-    this.showAllTasks();
-    this.updateSidebarLists();
+    this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+    this.visibilityManager.updateSidebarLists(this.viewManager.getCurrentView(), () => this.saveToLocalStorage());
   }
 
   updateRepeatOptions() {
@@ -94,27 +161,8 @@ export default class DialogManager {
     options[4].textContent = `Annually on ${fullDate}`;
   }
 
-  generateTimeOptions() {
-    const times = [];
-
-    for (let hour = 1; hour <= 11; hour++) {
-      const value = `${String(hour).padStart(2, '0')}:00`;
-      times.push({ value, label: `${hour}:00 AM` });
-    }
-
-    times.push({ value: '12:00', label: '12:00 PM' });
-
-    for (let hour = 1; hour <= 11; hour++) {
-      const value = `${String(hour + 12).padStart(2, '0')}:00`;
-      times.push({ value, label: `${hour}:00 PM` });
-    }
-
-    times.push({ value: '00:00', label: '12:00 AM' });
-    return times;
-  }
-
   createTaskDialog() {
-    const timeOptions = this.generateTimeOptions();
+    const timeOptions = generateTimeOptions();
     const timeOptionsHTML = timeOptions.map(opt => 
       `<option value="${opt.value}">${opt.label}</option>`
     ).join('');
@@ -231,246 +279,52 @@ export default class DialogManager {
     }
   }
 
-  toggleListExpansion() {
-    this.isListExpanded = !this.isListExpanded;
-    const listContent = document.querySelector('.listContent');
-    if (this.isListExpanded) {
-      listContent.style.display = 'block';
-      this.showListBtn.querySelector('img').style.transform = 'rotate(0deg)';
-    } else {
-      listContent.style.display = 'none';
-      this.showListBtn.querySelector('img').style.transform = 'rotate(-180deg)';
-    }
-  }
-
-  createDefaultList() {
-    if (dummyData.lists && dummyData.lists.length > 0) {
-      dummyData.lists.forEach(listData => {
-        const processedTasks = listData.tasks.map(task => {
-          const taskCopy = { ...task };
-          if (task.dueDate) {
-            const dateStr = task.dueDate;
-            const timeStr = task.time && task.time !== 'N/A' ? task.time : '';
-            taskCopy.deadline = this.formatDeadlineFromDate(dateStr, timeStr, task.allDay);
-          } else {
-            taskCopy.deadline = 'No date';
-          }
-          return taskCopy;
-        });
-
-        const list = new ListContainer({
-          id: listData.id,
-          name: listData.title,
-          tasks: processedTasks
-        });
-        list.onAddTask = (listId) => {
-          this.currentListId = listId;
-          this.open();
-        };
-        list.onTaskStarred = (taskId, starred) => {
-          if (this.currentView === 'starred') {
-            this.showStarredTasks();
-          }
-        };
-        this.lists.push(list);
-        this.listVisibility[list.id] = true;
-      });
-    } else {
-      const defaultList = new ListContainer({ name: 'My Tasks' });
-      defaultList.onAddTask = (listId) => {
-        this.currentListId = listId;
-        this.open();
-      };
-      defaultList.onTaskStarred = (taskId, starred) => {
-        if (this.currentView === 'starred') {
-          this.showStarredTasks();
-        }
-      };
-      this.lists.push(defaultList);
-      this.listVisibility[defaultList.id] = true;
-    }
-    
-    this.updateListDropdown();
-    this.updateSidebarLists();
-  }
-
-  showAllTasks() {
-    this.currentView = 'all';
-    this.taskContainer.innerHTML = '';
-    
-    this.lists.forEach(list => {
-      list.render(this.taskContainer);
-      const listElement = document.querySelector(`.list-container[data-list-id="${list.id}"]`);
-      if (listElement) {
-        if (this.listVisibility[list.id] === undefined) {
-          this.listVisibility[list.id] = true;
-        }
-        listElement.style.display = this.listVisibility[list.id] ? 'block' : 'none';
-      }
-    });
-    
-    this.updateSidebarLists();
-  }
-
-  showStarredTasks() {
-    this.currentView = 'starred';
-    this.taskContainer.innerHTML = '';
-    
-    const starredTasks = [];
-    this.lists.forEach(list => {
-      list.tasks.forEach(task => {
-        if (task.starred === true) {
-          const taskCopy = { ...task };
-          starredTasks.push(taskCopy);
-        }
-      });
-    });
-
-    this.starredTasksContainer = new ListContainer({
-      id: 'starred-tasks',
-      name: 'Starred Tasks',
-      tasks: starredTasks
-    });
-    this.starredTasksContainer.onAddTask = (listId) => {
-      this.currentListId = null;
-      this.open();
-    };
-    this.starredTasksContainer.onTaskStarred = (taskId, starred) => {
-      this.lists.forEach(list => {
-        const task = list.tasks.find(t => t.id === taskId);
-        if (task) {
-          task.starred = starred;
-          list.update();
-        }
-      });
-      this.showStarredTasks();
-    };
-    this.starredTasksContainer.render(this.taskContainer);
-    
-    this.updateSidebarLists();
-  }
-
-  formatDeadlineFromDate(dateStr, timeStr, allDay) {
-    const [month, day, year] = dateStr.split('/');
-    const dateObj = new Date(`${year}-${month}-${day}`);
-    
-    return format(dateObj, 'EEE, MMM d');
-  }
 
   createNewList(name) {
-    const newList = new ListContainer({ name, tasks: [] });
-    newList.onAddTask = (listId) => {
-      this.currentListId = listId;
-      this.open();
-    };
-    newList.onTaskStarred = (taskId, starred) => {
-      if (this.currentView === 'starred') {
-        this.showStarredTasks();
-      } else if (this.currentView === 'all') {
-        this.showAllTasks();
-      }
-    };
-    this.lists.push(newList);
+    const newList = this.listManager.createNewList(name);
+    this.visibilityManager.lists = this.lists;
+    this.visibilityManager.setInitialVisibility(newList.id, this.viewManager.getCurrentView());
     
-    this.listVisibility[newList.id] = this.currentView === 'all';
-    
-    if (this.currentView === 'all') {
-      this.showAllTasks();
-    } else if (this.currentView === 'starred') {
-      this.showStarredTasks();
+    if (this.viewManager.getCurrentView() === 'all') {
+      this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+    } else if (this.viewManager.getCurrentView() === 'starred') {
+      this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
     } else {
       newList.render(this.taskContainer);
     }
     
-    this.updateListDropdown();
-    this.updateSidebarLists();
-  }
-
-  updateSidebarLists() {
-    const listContent = document.querySelector('.listContent');
-    if (!listContent) return;
-
-    listContent.innerHTML = '';
-    
-    this.lists.forEach(list => {
-      const listItem = document.createElement('div');
-      listItem.className = 'sidebar-list-item';
-      listItem.dataset.listId = list.id;
-      
-      if (this.listVisibility[list.id] === undefined) {
-        this.listVisibility[list.id] = this.currentView === 'all';
-      }
-      
-      listItem.innerHTML = `
-        <input type="checkbox" class="list-checkbox" data-list-id="${list.id}" ${this.listVisibility[list.id] ? 'checked' : ''}>
-        <span class="list-item-name">${list.name}</span>
-      `;
-      
-      const checkbox = listItem.querySelector('.list-checkbox');
-      const listItemName = listItem.querySelector('.list-item-name');
-      
-      checkbox.addEventListener('change', (e) => {
-        e.stopPropagation();
-        this.toggleListVisibility(list.id, e.target.checked);
-      });
-      
-      listItemName.addEventListener('click', (e) => {
-        e.stopPropagation();
-        checkbox.checked = !checkbox.checked;
-        this.toggleListVisibility(list.id, checkbox.checked);
-      });
-      
-      listContent.appendChild(listItem);
-    });
-  }
-
-  isListVisible(listId) {
-    if (this.listVisibility[listId] !== undefined) {
-      return this.listVisibility[listId];
-    }
-    const listElement = document.querySelector(`.list-container[data-list-id="${listId}"]`);
-    if (listElement) {
-      return listElement.style.display !== 'none';
-    }
-    return this.currentView === 'all';
-  }
-
-  toggleListVisibility(listId, show) {
-    this.listVisibility[listId] = show;
-    
-    const listElement = document.querySelector(`.list-container[data-list-id="${listId}"]`);
-    if (listElement) {
-      listElement.style.display = show ? 'block' : 'none';
-    }
-  }
-
-  updateListDropdown() {
-    const listSelect = document.getElementById('taskList');
-    listSelect.innerHTML = '';
-    
-    this.lists.forEach(list => {
-      const option = document.createElement('option');
-      option.value = list.name;
-      option.textContent = list.name;
-      listSelect.appendChild(option);
-    });
+    this.visibilityManager.updateSidebarLists(this.viewManager.getCurrentView(), () => this.saveToLocalStorage());
   }
 
   open(listId = null) {
+    this.listManager.updateListDropdown();
+    
     this.dialog.classList.add('active');
     this.updateRepeatOptions();
     const today = new Date();
     this.dateInput.value = format(today, 'yyyy-MM-dd');
     
-    if (listId) {
-      const targetList = this.lists.find(l => l.id === listId);
-      if (targetList) {
-        document.getElementById('taskList').value = targetList.name;
+    let targetListId = listId || this.currentListId;
+    
+    if (!targetListId) {
+      const visibleListContainer = Array.from(document.querySelectorAll('.list-container[data-list-id]')).find(
+        container => {
+          const style = window.getComputedStyle(container);
+          return container.offsetParent !== null && style.display !== 'none' && style.visibility !== 'hidden';
+        }
+      );
+      if (visibleListContainer) {
+        targetListId = visibleListContainer.dataset.listId;
       }
-    } else if (this.currentListId) {
-      const targetList = this.lists.find(l => l.id === this.currentListId);
+    }
+    
+    if (targetListId) {
+      const targetList = this.lists.find(l => l.id === targetListId);
       if (targetList) {
-        document.getElementById('taskList').value = targetList.name;
+        const listSelect = document.getElementById('taskList');
+        if (listSelect) {
+          listSelect.value = targetList.name;
+        }
       }
     }
   }
@@ -486,16 +340,6 @@ export default class DialogManager {
     this.currentListId = null;
   }
 
-  formatDateTime(date, time, allDay) {
-    if (!date) {
-      return 'No date';
-    }
-    
-    const dateObj = new Date(date);
-    
-    // Format as "Weekday, Date" (e.g., "Thu, Jan 15")
-    return format(dateObj, 'EEE, MMM d');
-  }
 
   handleSubmit(e) {
     e.preventDefault();
@@ -521,45 +365,288 @@ export default class DialogManager {
     
     const isNewList = !targetList;
     if (!targetList) {
-      targetList = new ListContainer({ name: formData.list });
-      targetList.onAddTask = (listId) => {
-        this.currentListId = listId;
-        this.open();
-      };
-      targetList.onTaskStarred = (taskId, starred) => {
-        if (this.currentView === 'starred') {
-          this.showStarredTasks();
-        }
-      };
-      this.lists.push(targetList);
-      this.listVisibility[targetList.id] = this.currentView === 'all';
-      this.updateListDropdown();
-      this.updateSidebarLists();
+      targetList = this.listManager.createNewList(formData.list);
+      this.visibilityManager.lists = this.lists;
+      this.visibilityManager.setInitialVisibility(targetList.id, this.viewManager.getCurrentView());
+    }
+
+    let dueDate = formData.date;
+    if (dueDate) {
+      const dateObj = new Date(dueDate);
+      if (!isNaN(dateObj.getTime())) {
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        dueDate = `${month}/${day}/${year}`;
+      }
     }
 
     const task = {
-      id: `task-${Date.now()}`,
+      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title: formData.title,
-      description: formData.description,
+      description: formData.description || '',
+      dueDate: dueDate,
       date: formData.date,
-      time: formData.time,
+      time: formData.time || (formData.allDay ? 'N/A' : ''),
       allDay: formData.allDay,
       repeat: formData.repeat,
-      dateTime: this.formatDateTime(formData.date, formData.time || '00:00', formData.allDay),
-      deadline: formData.date ? this.formatDateTime(formData.date, formData.time || '00:00', formData.allDay) : 'No date',
+      dateTime: formatDateTime(formData.date, formData.time || '00:00', formData.allDay),
+      deadline: formData.date ? formatDateTime(formData.date, formData.time || '00:00', formData.allDay) : 'No date',
       starred: false,
       completed: false
     };
 
     targetList.addTask(task);
+    this.saveToLocalStorage();
 
-    if (this.currentView === 'all' && isNewList) {
-      this.showAllTasks();
-    } else if (this.currentView === 'starred') {
-      this.showStarredTasks();
+    if (this.viewManager.getCurrentView() === 'all') {
+      this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
+    } else if (this.viewManager.getCurrentView() === 'starred') {
+      this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
     }
 
     this.close();
+  }
+
+  openDateModal(taskId, listId) {
+    const list = this.lists.find(l => l.id === listId);
+    if (!list) return;
+    
+    const task = list.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    let dateModal = document.getElementById('dateModal');
+    if (!dateModal) {
+      dateModal = document.createElement('div');
+      dateModal.className = 'dialog-backdrop';
+      dateModal.id = 'dateModal';
+      dateModal.innerHTML = `
+        <div class="dialog-container">
+          <button class="dialog-close" id="closeDateModal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <h2 style="margin-bottom: 20px; font-size: 1.5rem;">Change Date</h2>
+          <form id="dateModalForm">
+            <div class="datetime-container">
+              <input type="date" id="modalTaskDate" class="dialog-date">
+              <select id="modalTaskTime" class="dialog-time">
+                ${generateTimeOptions().map(opt => 
+                  `<option value="${opt.value}">${opt.label}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="checkbox-container">
+              <input type="checkbox" id="modalAllDay" class="dialog-checkbox">
+              <label for="modalAllDay">All day</label>
+            </div>
+            <div class="dialog-actions" style="margin-top: 20px;">
+              <button type="button" class="dialog-cancel" id="removeDateBtn">Remove Date</button>
+              <button type="button" class="dialog-cancel" id="cancelDateModal">Cancel</button>
+              <button type="submit" class="dialog-submit">Save</button>
+            </div>
+          </form>
+        </div>
+      `;
+      document.body.appendChild(dateModal);
+
+      const closeBtn = dateModal.querySelector('#closeDateModal');
+      const cancelBtn = dateModal.querySelector('#cancelDateModal');
+      const removeBtn = dateModal.querySelector('#removeDateBtn');
+      const form = dateModal.querySelector('#dateModalForm');
+      const allDayCheckbox = dateModal.querySelector('#modalAllDay');
+      const timeSelect = dateModal.querySelector('#modalTaskTime');
+
+      closeBtn.addEventListener('click', () => this.closeDateModal());
+      cancelBtn.addEventListener('click', () => this.closeDateModal());
+      removeBtn.addEventListener('click', () => this.removeTaskDate(taskId, listId));
+      
+      allDayCheckbox.addEventListener('change', (e) => {
+        timeSelect.disabled = e.target.checked;
+        if (e.target.checked) {
+          timeSelect.value = '';
+        }
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.saveTaskDate(taskId, listId);
+      });
+
+      dateModal.addEventListener('click', (e) => {
+        if (e.target === dateModal) {
+          this.closeDateModal();
+        }
+      });
+    }
+
+    const dateInput = dateModal.querySelector('#modalTaskDate');
+    const timeSelect = dateModal.querySelector('#modalTaskTime');
+    const allDayCheckbox = dateModal.querySelector('#modalAllDay');
+
+    if (task.date) {
+      dateInput.value = task.date;
+    } else if (task.dueDate) {
+      const [month, day, year] = task.dueDate.split('/');
+      dateInput.value = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    } else {
+      const today = new Date();
+      dateInput.value = format(today, 'yyyy-MM-dd');
+    }
+
+    if (task.allDay) {
+      allDayCheckbox.checked = true;
+      timeSelect.disabled = true;
+      timeSelect.value = '';
+    } else {
+      allDayCheckbox.checked = false;
+      timeSelect.disabled = false;
+        if (task.time && task.time !== 'N/A') {
+          const convertedTime = convertTimeFormat(task.time);
+          if (convertedTime) {
+            timeSelect.value = convertedTime;
+          } else {
+            timeSelect.value = task.time;
+          }
+        }
+    }
+
+    dateModal.dataset.taskId = taskId;
+    dateModal.dataset.listId = listId;
+    dateModal.classList.add('active');
+  }
+
+  closeDateModal() {
+    const dateModal = document.getElementById('dateModal');
+    if (dateModal) {
+      dateModal.classList.remove('active');
+    }
+  }
+
+  saveTaskDate(taskId, listId) {
+    const dateModal = document.getElementById('dateModal');
+    if (!dateModal) return;
+
+    const list = this.lists.find(l => l.id === listId);
+    if (!list) return;
+
+    const task = list.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const dateInput = dateModal.querySelector('#modalTaskDate');
+    const timeSelect = dateModal.querySelector('#modalTaskTime');
+    const allDayCheckbox = dateModal.querySelector('#modalAllDay');
+
+    const dateValue = dateInput.value;
+    const timeValue = allDayCheckbox.checked ? '' : timeSelect.value;
+    const allDay = allDayCheckbox.checked;
+
+    if (dateValue) {
+      const dateObj = new Date(dateValue);
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const year = dateObj.getFullYear();
+      const dueDate = `${month}/${day}/${year}`;
+
+      task.dueDate = dueDate;
+      task.date = dateValue;
+      task.time = timeValue || (allDay ? 'N/A' : '');
+      task.allDay = allDay;
+      task.deadline = formatDateTime(dateValue, timeValue || '00:00', allDay);
+    }
+
+    list.update();
+    this.saveToLocalStorage();
+    this.closeDateModal();
+
+    if (this.viewManager.getCurrentView() === 'starred') {
+      this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
+    }
+  }
+
+  removeTaskDate(taskId, listId) {
+    const list = this.lists.find(l => l.id === listId);
+    if (!list) return;
+
+    const task = list.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.dueDate = null;
+    task.date = null;
+    task.time = '';
+    task.allDay = false;
+    task.deadline = 'No date';
+
+    list.update();
+    this.saveToLocalStorage();
+    this.closeDateModal();
+
+    if (this.viewManager.getCurrentView() === 'starred') {
+      this.viewManager.showStarredTasks(this.visibilityManager.getListVisibility());
+    }
+  }
+
+  saveToLocalStorage() {
+    this.storageManager.saveToLocalStorage(
+      this.lists,
+      this.visibilityManager.getListVisibility(),
+      this.sortOrder
+    );
+  }
+
+  loadFromLocalStorage() {
+    const data = this.storageManager.loadFromLocalStorage();
+    if (!data || !data.lists || data.lists.length === 0) {
+      return;
+    }
+
+    this.lists = [];
+    this.taskContainer.innerHTML = '';
+
+    data.lists.forEach(listData => {
+      const processedTasks = listData.tasks.map(task => {
+        const taskCopy = { ...task };
+        if (task.dueDate) {
+          const dateStr = task.dueDate;
+          const timeStr = task.time && task.time !== 'N/A' ? task.time : '';
+          taskCopy.deadline = formatDeadlineFromDate(dateStr, timeStr, task.allDay);
+        } else {
+          taskCopy.deadline = 'No date';
+        }
+        return taskCopy;
+      });
+
+      const list = new ListContainer({
+        id: listData.id,
+        name: listData.name,
+        tasks: processedTasks
+      });
+      
+      this.listManager.setupListCallbacks(list);
+      this.lists.push(list);
+    });
+
+    this.listManager.lists = this.lists;
+    this.viewManager.lists = this.lists;
+    this.visibilityManager.lists = this.lists;
+
+    if (data.listVisibility) {
+      this.visibilityManager.setListVisibility(data.listVisibility);
+    }
+    if (data.sortOrder) {
+      this.sortOrder = data.sortOrder;
+      Object.entries(this.sortOrder).forEach(([listId, sortType]) => {
+        if (sortType !== 'none') {
+          this.sortListTasks(listId, sortType);
+        }
+      });
+    }
+
+    this.listManager.updateListDropdown();
+    this.visibilityManager.updateSidebarLists(this.viewManager.getCurrentView(), () => this.saveToLocalStorage());
+    this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
   }
 }
 
