@@ -1,0 +1,112 @@
+{
+  "lists": [
+    {
+      "id": "list-1",
+      "title": "Work Tasks",
+      "tasks": [
+        {
+          "id": "task-1",
+          "title": "Finish project report",
+          "description": "Compile final report for the Q3 project",
+          "dueDate": "01/12/2025",
+          "time": "4:00pm",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-2",
+          "title": "Code review",
+          "description": "Review the code for the new feature implementation",
+          "dueDate": "01/17/2025",
+          "time": "10:00am",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-3",
+          "title": "Update documentation",
+          "description": "Revise the user manual for the new version of the software",
+          "dueDate": "01/19/2025",
+          "time": "1:00pm",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        }
+      ]
+    },
+    {
+      "id": "list-2",
+      "title": "Personal Tasks",
+      "tasks": [
+        {
+          "id": "task-1",
+          "title": "Plan weekend trip",
+          "description": "Research destinations and make a travel itinerary",
+          "dueDate": "01/15/2025",
+          "time": "N/A",
+          "starred": false,
+          "completed": false,
+          "allDay": true
+        },
+        {
+          "id": "task-2",
+          "title": "Call Mom",
+          "description": "Check in with Mom and catch up",
+          "dueDate": "01/16/2025",
+          "time": "2:00pm",
+          "starred": true,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-3",
+          "title": "Buy birthday gift",
+          "description": "Get a gift for John's birthday next week",
+          "dueDate": "01/18/2025",
+          "time": "N/A",
+          "starred": false,
+          "completed": false,
+          "allDay": true
+        }
+      ]
+    },
+    {
+      "id": "list-3",
+      "title": "Study Tasks",
+      "tasks": [
+        {
+          "id": "task-1",
+          "title": "Study for math test",
+          "description": "Review chapters 3-6 and complete practice problems",
+          "dueDate": "01/18/2025",
+          "time": "7:00pm",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-2",
+          "title": "Write history essay",
+          "description": "Finish writing the essay on Ancient Rome",
+          "dueDate": "01/20/2025",
+          "time": "3:00pm",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        },
+        {
+          "id": "task-3",
+          "title": "Prepare biology presentation",
+          "description": "Create slides and rehearse for the biology project presentation",
+          "dueDate": "01/22/2025",
+          "time": "9:00am",
+          "starred": false,
+          "completed": false,
+          "allDay": false
+        }
+      ]
+    }
+  ]
+}
