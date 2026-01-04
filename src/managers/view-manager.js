@@ -1,4 +1,4 @@
-import ListContainer from '../list-container.js';
+import ListContainer from '../components/list-container.js';
 
 export default class ViewManager {
   constructor(lists, taskContainer, callbacks) {

@@ -7,8 +7,8 @@ import CheckIcon from '/public/images/circle.png';
 import CalendarIcon from '/public/images/calendar.png';
 import StarIcon from '/public/images/star.png';
 import StarCompletedIcon from '/public/images/star-completed.png';
-import dummyData from './dummy-data.json';
-import { formatTimeTo12Hour } from './utils/date-time-utils.js';
+import dummyData from '../data/dummy-data.json';
+import { formatTimeTo12Hour } from '../utils/date-time-utils.js';
 
 export default class ListContainer {
   constructor(data = {}) {

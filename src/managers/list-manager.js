@@ -1,5 +1,5 @@
-import ListContainer from '../list-container.js';
-import dummyData from '../dummy-data.json';
+import ListContainer from '../components/list-container.js';
+import dummyData from '../data/dummy-data.json';
 import { formatDeadlineFromDate } from '../utils/date-time-utils.js';
 
 
