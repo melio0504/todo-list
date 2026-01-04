@@ -6,9 +6,8 @@ export default class StorageManager {
   /**
    * @param {Array} lists
    * @param {Object} listVisibility
-   * @param {Object} sortOrder
    */
-  saveToLocalStorage(lists, listVisibility, sortOrder) {
+  saveToLocalStorage(lists, listVisibility) {
     try {
       const data = {
         lists: lists.map(list => ({
@@ -29,7 +28,6 @@ export default class StorageManager {
           }))
         })),
         listVisibility: listVisibility,
-        sortOrder: sortOrder || {}
       };
       localStorage.setItem(this.storageKey, JSON.stringify(data));
     } catch (error) {
