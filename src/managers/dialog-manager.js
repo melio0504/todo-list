@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
-import ListContainer from './list-container.js';
+import ListContainer from '../components/list-container.js';
 import { generateTimeOptions, formatDeadlineFromDate, formatDateTime, convertTimeFormat } from '../utils/date-time-utils.js';
-import StorageManager from '../managers/storage-manager.js';
-import ListManager from '../managers/list-manager.js';
-import ViewManager from '../managers/view-manager.js';
-import VisibilityManager from '../managers/visibility-manager.js';
+import StorageManager from './storage-manager.js';
+import ListManager from './list-manager.js';
+import ViewManager from './view-manager.js';
+import VisibilityManager from './visibility-manager.js';
 
 export default class DialogManager {
   constructor() {

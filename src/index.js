@@ -1,6 +1,6 @@
 import './styles.css';
 import toggleSidebar from './components/toggle-sidebar';
-import DialogManager from './components/dialog-manager.js';
+import DialogManager from './managers/dialog-manager.js';
 
 function initializeApp() {
   const menuToggle = document.querySelector('.menu-toggle');
