@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parse, compareAsc, isValid } from 'date-fns';
 import { formatTimeTo12Hour } from '../utils/date-time-utils.js';
 import dummyData from '../data/dummy-data.json';
 import List from '/public/images/list.png';
@@ -49,12 +49,10 @@ export default class ListContainer {
         ${this.renderTasks()}
       </div>
       <button class="completed-btn" data-list-id="${this.id}">
-        <img src="${CompleteIcon}" alt="Complete button">
+        <img src="${CompleteIcon}" alt="Complete button" class="${this.showCompleted ? 'rotated' : ''}">
         <p>Completed (${this.completedCount})</p>
       </button>
-      <div class="completed-task">
-        ${this.renderCompletedTasks()}
-      </div>
+      ${this.showCompleted ? `<div class="completed-task">${this.renderCompletedTasks()}</div>` : ''}
     `;
     
     const addTaskBtn = container.querySelector('.addTaskBtn');
@@ -115,30 +113,35 @@ export default class ListContainer {
     }
 
     const incompleteTasks = this.tasks.filter(task => !task.completed);
-    const completedTasks = this.tasks.filter(task => task.completed);
+    
+    const sortedIncompleteTasks = [...incompleteTasks].sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+
+      const dateA = parse(a.dueDate, 'MM/dd/yyyy', new Date());
+      const dateB = parse(b.dueDate, 'MM/dd/yyyy', new Date());
+
+      const validA = isValid(dateA);
+      const validB = isValid(dateB);
+
+      if (!validA && !validB) return 0;
+      if (!validA) return 1;
+      if (!validB) return -1;
+
+      return compareAsc(dateA, dateB);
+    });
 
     const groupedIncompleteTasks = {};
-    incompleteTasks.forEach(task => {
+    sortedIncompleteTasks.forEach(task => {
       if (!task.id) {
         task.id = `task-${Date.now()}-${Math.random().toString(36)}`;
       }
-      const deadline = task.deadline || 'No date';
+      const deadline = task.deadline || (task.dueDate ? this.formatDeadlineFromDate(task.dueDate, task.time || '', task.allDay) : 'No date');
       if (!groupedIncompleteTasks[deadline]) {
         groupedIncompleteTasks[deadline] = [];
       }
       groupedIncompleteTasks[deadline].push(task);
-    });
-
-    const groupedCompletedTasks = {};
-    completedTasks.forEach(task => {
-      if (!task.id) {
-        task.id = `task-${Date.now()}-${Math.random().toString(36)}`;
-      }
-      const deadline = task.deadline || 'No date';
-      if (!groupedCompletedTasks[deadline]) {
-        groupedCompletedTasks[deadline] = [];
-      }
-      groupedCompletedTasks[deadline].push(task);
     });
 
     let html = Object.entries(groupedIncompleteTasks).map(([deadline, tasks]) => {
@@ -148,24 +151,16 @@ export default class ListContainer {
       `;
     }).join('');
 
-    if (this.showCompleted && completedTasks.length > 0) {
-      html += Object.entries(groupedCompletedTasks).map(([deadline, tasks]) => {
-        return `
-          <span class="task-deadline">${deadline}</span>
-          ${tasks.map(task => this.renderTask(task, true)).join('')}
-        `;
-      }).join('');
-    }
-
     return html;
   }
 
   renderTask(task, isCompleted = false) {
-    const taskIsCompleted = task.completed === true || isCompleted;
     const deadline = task.deadline || (task.dueDate ? this.formatDeadlineFromDate(task.dueDate, task.time || '', task.allDay) : 'No date');
     const displayTime = task.time && task.time !== 'N/A' && !task.allDay ? formatTimeTo12Hour(task.time) : null;
+    const completedClass = isCompleted ? 'completed' : '';
+    
     return `
-      <div class="task-details ${taskIsCompleted ? 'completed' : ''}" data-task-id="${task.id}">
+      <div class="task-details ${completedClass}" data-task-id="${task.id}">
         <button class="check-btn" data-task-id="${task.id}">
           <img src="${CheckIcon}" alt="check button">
         </button>
@@ -192,20 +187,31 @@ export default class ListContainer {
     }
 
     const completedTasks = this.tasks.filter(task => task.completed);
+    
+    if (completedTasks.length === 0 || !this.showCompleted) {
+      return '';
+    }
 
     const groupedCompletedTasks = {};
     completedTasks.forEach(task => {
       if (!task.id) {
         task.id = `task-${Date.now()}-${Math.random().toString(36)}`;
       }
-      const deadline = task.deadline || 'No date';
+      const deadline = task.deadline || (task.dueDate ? this.formatDeadlineFromDate(task.dueDate, task.time || '', task.allDay) : 'No date');
       if (!groupedCompletedTasks[deadline]) {
         groupedCompletedTasks[deadline] = [];
       }
       groupedCompletedTasks[deadline].push(task);
-    }); 
+    });
 
-    return completedTasksDOM;
+    let completedTasksHTML = Object.entries(groupedCompletedTasks).map(([deadline, tasks]) => {
+      return `
+        <span class="task-deadline">${deadline}</span>
+        ${tasks.map(task => this.renderTask(task, true)).join('')}
+      `;
+    }).join('');
+
+    return completedTasksHTML;
   }
 
   formatDeadlineFromDate(dateStr) {
@@ -278,61 +284,82 @@ export default class ListContainer {
         if (completedBtnText) {
           completedBtnText.textContent = `Completed (${this.completedCount})`;
         }
-        const completedBtnIcon = completedBtn.querySelector('img');
-        if (completedBtnIcon) {
-          completedBtnIcon.src = this.showCompleted ? DownwardArrowIcon : CompleteIcon;
+      }
+      
+      // Update the completed tasks section if it exists
+      const completedTaskSection = container.querySelector('.completed-task');
+      if (this.showCompleted) {
+        if (completedTaskSection) {
+          completedTaskSection.innerHTML = this.renderCompletedTasks();
+        } else {
+          // Create completed tasks section if it doesn't exist but should
+          const completedBtn = container.querySelector('.completed-btn');
+          if (completedBtn) {
+            const completedTaskDiv = document.createElement('div');
+            completedTaskDiv.className = 'completed-task';
+            completedTaskDiv.innerHTML = this.renderCompletedTasks();
+            completedBtn.insertAdjacentElement('afterend', completedTaskDiv);
+          }
         }
+      } else if (completedTaskSection) {
+        // Remove completed tasks section if it exists but shouldn't
+        completedTaskSection.remove();
       }
       
-      container.querySelectorAll('.star-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          
-          const button = e.currentTarget.closest('.star-btn') || e.currentTarget;
-          const taskId = button.dataset.taskId;
-          if (taskId) {
-            this.toggleStar(taskId);
-          }
-        });
-      });
+      // Reattach event listeners
+      this.attachEventListeners(container);
+    }
+  }
 
-      container.querySelectorAll('.check-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          const taskId = btn.dataset.taskId;
-          if (taskId) {
-            this.toggleComplete(taskId);
-          }
-        });
+  attachEventListeners(container) {
+    container.querySelectorAll('.star-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const button = e.currentTarget.closest('.star-btn') || e.currentTarget;
+        const taskId = button.dataset.taskId;
+        if (taskId) {
+          this.toggleStar(taskId);
+        }
       });
+    });
 
-      container.querySelectorAll('.date-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          const taskId = btn.dataset.taskId;
-          if (taskId && this.onDateClick) {
-            this.onDateClick(taskId, this.id);
-          }
-        });
+    container.querySelectorAll('.check-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const taskId = btn.dataset.taskId;
+        if (taskId) {
+          this.toggleComplete(taskId);
+        }
       });
-      
-      const addTaskBtn = container.querySelector('.addTaskBtn');
-      if (addTaskBtn && this.onAddTask) {
-        addTaskBtn.addEventListener('click', () => {
-          this.onAddTask(this.id);
-        });
-      }
+    });
 
-      container.querySelectorAll('.completed-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.toggleCompleted();
-        });
+    container.querySelectorAll('.date-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const taskId = btn.dataset.taskId;
+        if (taskId && this.onDateClick) {
+          this.onDateClick(taskId, this.id);
+        }
+      });
+    });
+    
+    const addTaskBtn = container.querySelector('.addTaskBtn');
+    if (addTaskBtn && this.onAddTask) {
+      addTaskBtn.addEventListener('click', () => {
+        this.onAddTask(this.id);
       });
     }
+
+    container.querySelectorAll('.completed-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleCompleted();
+      });
+    });
   }
 
   render(container) {
