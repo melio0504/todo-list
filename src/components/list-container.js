@@ -286,13 +286,11 @@ export default class ListContainer {
         }
       }
       
-      // Update the completed tasks section if it exists
       const completedTaskSection = container.querySelector('.completed-task');
       if (this.showCompleted) {
         if (completedTaskSection) {
           completedTaskSection.innerHTML = this.renderCompletedTasks();
         } else {
-          // Create completed tasks section if it doesn't exist but should
           const completedBtn = container.querySelector('.completed-btn');
           if (completedBtn) {
             const completedTaskDiv = document.createElement('div');
@@ -302,11 +300,9 @@ export default class ListContainer {
           }
         }
       } else if (completedTaskSection) {
-        // Remove completed tasks section if it exists but shouldn't
         completedTaskSection.remove();
       }
       
-      // Reattach event listeners
       this.attachEventListeners(container);
     }
   }
