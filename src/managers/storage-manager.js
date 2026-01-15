@@ -18,7 +18,6 @@ export default class StorageManager {
             title: task.title,
             description: task.description || '',
             dueDate: task.dueDate || null,
-            date: task.date || null,
             time: task.time || '',
             allDay: task.allDay || false,
             repeat: task.repeat || 'none',
