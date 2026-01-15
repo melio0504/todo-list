@@ -311,6 +311,7 @@ body {
 
         .list-task, .completed-task {
           overflow-y: auto;
+          scrollbar-width: none;
           padding: 10px 20px 10px 20px;
 
           .task-deadline {

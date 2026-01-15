@@ -1,7 +1,5 @@
 import ListContainer from '../components/list-container.js';
 import dummyData from '../data/dummy-data.json';
-import { formatDeadlineFromDate } from '../utils/date-time-utils.js';
-
 
 export default class ListManager {
   constructor(lists, callbacks) {

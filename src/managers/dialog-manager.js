@@ -279,7 +279,6 @@ export default class DialogManager {
     }
   }
 
-
   createNewList(name) {
     const newList = this.listManager.createNewList(name);
     this.visibilityManager.lists = this.lists;
@@ -339,7 +338,6 @@ export default class DialogManager {
     this.timeSelect.disabled = false;
     this.currentListId = null;
   }
-
 
   handleSubmit(e) {
     e.preventDefault();
@@ -709,4 +707,3 @@ export default class DialogManager {
     this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
   }
 }
-
