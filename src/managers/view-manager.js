@@ -23,7 +23,6 @@ export default class ViewManager {
       if (listVisibility[list.id] === undefined) {
         listVisibility[list.id] = true;
       }
-      listElement.style.display = listVisibility[list.id] ? 'block' : 'none';
     });
   }
 
