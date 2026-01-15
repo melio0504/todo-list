@@ -55,54 +55,7 @@ export default class ListContainer {
       ${this.showCompleted ? `<div class="completed-task">${this.renderCompletedTasks()}</div>` : ''}
     `;
     
-    const addTaskBtn = container.querySelector('.addTaskBtn');
-    if (addTaskBtn && this.onAddTask) {
-      addTaskBtn.addEventListener('click', () => {
-        this.onAddTask(this.id);
-      });
-    }
-    
-    container.querySelectorAll('.star-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-
-        const button = e.currentTarget.closest('.star-btn') || e.currentTarget;
-        const taskId = button.dataset.taskId;
-        if (taskId) {
-          this.toggleStar(taskId);
-        }
-      });
-    });
-
-    container.querySelectorAll('.check-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const taskId = btn.dataset.taskId;
-        if (taskId) {
-          this.toggleComplete(taskId);
-        }
-      });
-    });
-
-    container.querySelectorAll('.date-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const taskId = btn.dataset.taskId;
-        if (taskId && this.onDateClick) {
-          this.onDateClick(taskId, this.id);
-        }
-      });
-    });
-
-    container.querySelectorAll('.completed-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.toggleCompleted();
-      });
-    });
+    this.attachEventListeners(container);
 
     return container;
   }
@@ -253,6 +206,7 @@ export default class ListContainer {
   toggleCompleted() {
     this.showCompleted = !this.showCompleted;
     this.update();
+    console.log('Show completed tasks: ', this.showCompleted);
   }
 
   toggleComplete(taskId) {
