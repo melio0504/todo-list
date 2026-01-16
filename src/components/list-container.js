@@ -148,22 +148,18 @@ export default class ListContainer {
     }
 
     const incompleteTasks = this.tasks.filter(task => !task.completed);
-    
+
     const sortedIncompleteTasks = [...incompleteTasks].sort((a, b) => {
       if (!a.dueDate && !b.dueDate) return 0;
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
-
       const dateA = parse(a.dueDate, 'MM/dd/yyyy', new Date());
       const dateB = parse(b.dueDate, 'MM/dd/yyyy', new Date());
-
       const validA = isValid(dateA);
       const validB = isValid(dateB);
-
       if (!validA && !validB) return 0;
       if (!validA) return 1;
       if (!validB) return -1;
-
       return compareAsc(dateA, dateB);
     });
 
@@ -195,13 +191,26 @@ export default class ListContainer {
     }
 
     const completedTasks = this.tasks.filter(task => task.completed);
-    
     if (completedTasks.length === 0 || !this.showCompleted) {
       return '';
     }
 
+    const sortedCompletedTasks = [...completedTasks].sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      const dateA = parse(a.dueDate, 'MM/dd/yyyy', new Date());
+      const dateB = parse(b.dueDate, 'MM/dd/yyyy', new Date());
+      const validA = isValid(dateA);
+      const validB = isValid(dateB);
+      if (!validA && !validB) return 0;
+      if (!validA) return 1;
+      if (!validB) return -1;
+      return compareAsc(dateA, dateB);
+    });
+
     const groupedCompletedTasks = {};
-    completedTasks.forEach(task => {
+    sortedCompletedTasks.forEach(task => {
       if (!task.id) {
         task.id = `task-${Date.now()}-${Math.random().toString(36)}`;
       }
@@ -274,7 +283,6 @@ export default class ListContainer {
   toggleCompleted() {
     this.showCompleted = !this.showCompleted;
     this.update();
-    console.log('Show completed tasks: ', this.showCompleted);
   }
 
   update() {
@@ -285,7 +293,7 @@ export default class ListContainer {
       const listTask = container.querySelector('.list-task');
       if (listTask) {
         listTask.innerHTML = this.renderTasks();
-      } 
+      }
 
       const completedBtn = container.querySelector('.completed-btn');
       if (completedBtn) {
