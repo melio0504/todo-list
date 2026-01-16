@@ -283,7 +283,9 @@ export default class DialogManager {
     const newList = this.listManager.createNewList(name);
     this.visibilityManager.lists = this.lists;
     this.visibilityManager.setInitialVisibility(newList.id, this.viewManager.getCurrentView());
-    
+
+    this.saveToLocalStorage();
+
     if (this.viewManager.getCurrentView() === 'all') {
       this.viewManager.showAllTasks(this.visibilityManager.getListVisibility());
     } else if (this.viewManager.getCurrentView() === 'starred') {
@@ -291,7 +293,7 @@ export default class DialogManager {
     } else {
       newList.render(this.taskContainer);
     }
-    
+
     this.visibilityManager.updateSidebarLists(this.viewManager.getCurrentView(), () => this.saveToLocalStorage());
   }
 
