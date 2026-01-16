@@ -60,6 +60,88 @@ export default class ListContainer {
     return container;
   }
 
+  attachEventListeners(container) {
+    container.querySelectorAll('.star-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const button = e.currentTarget.closest('.star-btn') || e.currentTarget;
+        const taskId = button.dataset.taskId;
+        if (taskId) {
+          this.toggleStar(taskId);
+        }
+      });
+    });
+
+    container.querySelectorAll('.check-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const taskId = btn.dataset.taskId;
+        if (taskId) {
+          this.toggleComplete(taskId);
+        }
+      });
+    });
+
+    container.querySelectorAll('.date-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const taskId = btn.dataset.taskId;
+        if (taskId && this.onDateClick) {
+          this.onDateClick(taskId, this.id);
+        }
+      });
+    });
+    
+    const addTaskBtn = container.querySelector('.addTaskBtn');
+    if (addTaskBtn && this.onAddTask) {
+      addTaskBtn.addEventListener('click', () => {
+        this.onAddTask(this.id);
+      });
+    }
+
+    if (this._completedBtnHandler) {
+      container.removeEventListener('click', this._completedBtnHandler);
+    }
+    this._completedBtnHandler = (e) => {
+      const btn = e.target.closest('.completed-btn');
+      if (!btn) return;
+      e.stopPropagation();
+      this.toggleCompleted();
+    };
+    container.addEventListener('click', this._completedBtnHandler);
+  }
+
+  renderTask(task, isCompleted = false) {
+    const deadline = task.deadline || (task.dueDate ? this.formatDeadlineFromDate(task.dueDate, task.time || '', task.allDay) : 'No date');
+    const displayTime = task.time && task.time !== 'N/A' && !task.allDay ? formatTimeTo12Hour(task.time) : null;
+    const completedClass = isCompleted ? 'completed' : '';
+    
+    return `
+      <div class="task-details ${completedClass}" data-task-id="${task.id}">
+        <button class="check-btn" data-task-id="${task.id}">
+          <img src="${CheckIcon}" alt="check button">
+        </button>
+        <div class="task-name">
+          <p>${task.title}</p>
+          ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
+          ${task.dueDate || task.date ? `
+            <button class="date-btn" data-task-id="${task.id}">
+              <img src="${CalendarIcon}" alt="calendar icon">
+              ${deadline}${displayTime ? ` ${displayTime}` : ''}
+            </button>
+          ` : ''}
+        </div>
+        <button class="star-btn" data-task-id="${task.id}" title="${task.starred === true ? 'Unstar' : 'Star'}">
+          <img src="${task.starred === true ? StarCompletedIcon : StarIcon}" alt="star icon" class="${task.starred === true ? 'starred' : ''}">
+        </button>
+      </div>
+    `;
+  }
+
   renderTasks() {
     if (!this.tasks || this.tasks.length === 0) {
       return '';
@@ -105,33 +187,6 @@ export default class ListContainer {
     }).join('');
 
     return html;
-  }
-
-  renderTask(task, isCompleted = false) {
-    const deadline = task.deadline || (task.dueDate ? this.formatDeadlineFromDate(task.dueDate, task.time || '', task.allDay) : 'No date');
-    const displayTime = task.time && task.time !== 'N/A' && !task.allDay ? formatTimeTo12Hour(task.time) : null;
-    const completedClass = isCompleted ? 'completed' : '';
-    
-    return `
-      <div class="task-details ${completedClass}" data-task-id="${task.id}">
-        <button class="check-btn" data-task-id="${task.id}">
-          <img src="${CheckIcon}" alt="check button">
-        </button>
-        <div class="task-name">
-          <p>${task.title}</p>
-          ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
-          ${task.dueDate || task.date ? `
-            <button class="date-btn" data-task-id="${task.id}">
-              <img src="${CalendarIcon}" alt="calendar icon">
-              ${deadline}${displayTime ? ` ${displayTime}` : ''}
-            </button>
-          ` : ''}
-        </div>
-        <button class="star-btn" data-task-id="${task.id}" title="${task.starred === true ? 'Unstar' : 'Star'}">
-          <img src="${task.starred === true ? StarCompletedIcon : StarIcon}" alt="star icon" class="${task.starred === true ? 'starred' : ''}">
-        </button>
-      </div>
-    `;
   }
 
   renderCompletedTasks() {
@@ -188,6 +243,19 @@ export default class ListContainer {
     this.update();
   }
 
+  toggleComplete(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+      task.completed = !(task.completed === true);
+      this.completedCount = this.tasks.filter(t => t.completed === true).length;
+      this.update();
+      
+      if (this.onTaskCompleted) {
+        this.onTaskCompleted(taskId, task.completed);
+      }
+    }
+  }
+
   toggleStar(taskId) {
     const task = this.tasks.find(t => t.id === taskId);
     if (task) {
@@ -209,29 +277,16 @@ export default class ListContainer {
     console.log('Show completed tasks: ', this.showCompleted);
   }
 
-  toggleComplete(taskId) {
-    const task = this.tasks.find(t => t.id === taskId);
-    if (task) {
-      task.completed = !(task.completed === true);
-      this.completedCount = this.tasks.filter(t => t.completed === true).length;
-      this.update();
-      
-      if (this.onTaskCompleted) {
-        this.onTaskCompleted(taskId, task.completed);
-      }
-    }
-  }
-
   update() {
-    const container = document.querySelector(`[data-list-id="${this.id}"]`);
+    const container = document.querySelector(`.list-container[data-list-id="${this.id}"]`);
     if (container) {
       this.completedCount = this.tasks.filter(task => task.completed === true).length;
-      
+
       const listTask = container.querySelector('.list-task');
       if (listTask) {
         listTask.innerHTML = this.renderTasks();
-      }
-      
+      } 
+
       const completedBtn = container.querySelector('.completed-btn');
       if (completedBtn) {
         const completedBtnText = completedBtn.querySelector('p');
@@ -239,77 +294,26 @@ export default class ListContainer {
           completedBtnText.textContent = `Completed (${this.completedCount})`;
         }
       }
-      
-      const completedTaskSection = container.querySelector('.completed-task');
+
+      let completedTaskSection = container.querySelector('.completed-task');
       if (this.showCompleted) {
-        if (completedTaskSection) {
-          completedTaskSection.innerHTML = this.renderCompletedTasks();
-        } else {
+        if (!completedTaskSection) {
           const completedBtn = container.querySelector('.completed-btn');
-          if (completedBtn) {
-            const completedTaskDiv = document.createElement('div');
-            completedTaskDiv.className = 'completed-task';
-            completedTaskDiv.innerHTML = this.renderCompletedTasks();
-            completedBtn.insertAdjacentElement('afterend', completedTaskDiv);
+          completedTaskSection = document.createElement('div');
+          completedTaskSection.className = 'completed-task';
+          if (completedBtn && completedBtn.parentNode === container) {
+            completedBtn.insertAdjacentElement('afterend', completedTaskSection);
+          } else {
+            container.appendChild(completedTaskSection);
           }
         }
+        completedTaskSection.innerHTML = this.renderCompletedTasks();
       } else if (completedTaskSection) {
         completedTaskSection.remove();
       }
-      
-      this.attachEventListeners(container);
-    }
-  }
-
-  attachEventListeners(container) {
-    container.querySelectorAll('.star-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        const button = e.currentTarget.closest('.star-btn') || e.currentTarget;
-        const taskId = button.dataset.taskId;
-        if (taskId) {
-          this.toggleStar(taskId);
-        }
-      });
-    });
-
-    container.querySelectorAll('.check-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const taskId = btn.dataset.taskId;
-        if (taskId) {
-          this.toggleComplete(taskId);
-        }
-      });
-    });
-
-    container.querySelectorAll('.date-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const taskId = btn.dataset.taskId;
-        if (taskId && this.onDateClick) {
-          this.onDateClick(taskId, this.id);
-        }
-      });
-    });
-    
-    const addTaskBtn = container.querySelector('.addTaskBtn');
-    if (addTaskBtn && this.onAddTask) {
-      addTaskBtn.addEventListener('click', () => {
-        this.onAddTask(this.id);
-      });
     }
 
-    container.querySelectorAll('.completed-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.toggleCompleted();
-      });
-    });
+    this.attachEventListeners(container);
   }
 
   render(container) {
