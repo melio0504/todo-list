@@ -37,8 +37,7 @@ export default class ViewManager {
     this.lists.forEach(list => {
       list.tasks.forEach(task => {
         if (task.starred === true) {
-          const taskCopy = { ...task };
-          starredTasks.push(taskCopy);
+          starredTasks.push({ ...task, listId: list.id });
         }
       });
     });
@@ -68,17 +67,26 @@ export default class ViewManager {
     };
     
     this.starredTasksContainer.onTaskCompleted = (taskId, completed) => {
-      this.lists.forEach(list => {
-        const task = list.tasks.find(t => t.id === taskId);
-        if (task) {
-          task.completed = completed;
-          list.update();
+      const starredTask = this.starredTasksContainer.tasks.find(t => t.id === taskId);
+      if (starredTask && starredTask.listId) {
+        const list = this.lists.find(l => l.id === starredTask.listId);
+        if (list) {
+          const task = list.tasks.find(t => t.id === taskId);
+          if (task) {
+            task.completed = completed;
+            list.update();
+          }
         }
-      });
+      }
       if (this.callbacks.onTaskCompleted) {
         this.callbacks.onTaskCompleted(taskId, completed);
       }
-      this.showStarredTasks(listVisibility);
+      const anyStarred = this.lists.some(list => list.tasks.some(task => task.starred && !task.completed));
+      if (anyStarred) {
+        this.showStarredTasks(listVisibility);
+      } else {
+        this.taskContainer.innerHTML = '<div class="empty-message">No starred tasks left!</div>';
+      }
     };
     
     this.starredTasksContainer.onDateClick = (taskId, listId) => {

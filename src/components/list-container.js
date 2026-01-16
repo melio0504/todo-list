@@ -319,9 +319,8 @@ export default class ListContainer {
       } else if (completedTaskSection) {
         completedTaskSection.remove();
       }
+      this.attachEventListeners(container);
     }
-
-    this.attachEventListeners(container);
   }
 
   render(container) {
