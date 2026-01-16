@@ -88,12 +88,23 @@ export default class VisibilityManager {
    */
   toggleListVisibility(listId, show, onToggleVisibility) {
     this.listVisibility[listId] = show;
-    
-    const listElement = document.querySelector(`.list-container[data-list-id="${listId}"]`);
-    if (listElement) {
-      listElement.style.display = show ? 'block' : 'none';
+
+    const list = this.lists.find(l => l.id === listId);
+    const parent = document.querySelector('.task-container');
+    const selector = `.list-container[data-list-id="${listId}"]`;
+    const listElement = document.querySelector(selector);
+
+    if (show) {
+      if (!listElement && list && parent) {
+        const newElement = list.createElement();
+        parent.appendChild(newElement);
+      }
+    } else {
+      if (listElement) {
+        listElement.remove();
+      }
     }
-    
+
     if (onToggleVisibility) {
       onToggleVisibility();
     }
