@@ -352,15 +352,7 @@ export default class DialogManager {
       list: document.getElementById('taskList').value
     };
 
-    let targetList = null;
-    if (this.currentListId) {
-      targetList = this.lists.find(l => l.id === this.currentListId);
-    }
-    
-    if (!targetList) {
-      targetList = this.lists.find(l => l.name === formData.list);
-    }
-    
+    let targetList = this.lists.find(l => l.name === formData.list);
     const isNewList = !targetList;
     if (!targetList) {
       targetList = this.listManager.createNewList(formData.list);
